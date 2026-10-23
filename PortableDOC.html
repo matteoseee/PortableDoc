@@ -216,6 +216,7 @@ document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{if(!si)return;co
 $('#idl').onclick=()=>{si&&si.remove();place();upd()};
 addEventListener('resize',place);
 let TM;function upd(n){const h=!!ed.querySelector('img'),t=$('#bt');t.classList.toggle('dis',h);t.title=h?'Non disponibile: il TXT non supporta le immagini':'Esporta in TXT';$('#st').textContent=(ed.innerText.trim().match(/\S+/g)||[]).length+' parole';clearTimeout(TM);const f=()=>{num();pag()};n?f():TM=setTimeout(f,150)}
+document.addEventListener('paste',e=>{const x=e.target.closest&&e.target.closest('.ed');if(!x)return;const f=[...(e.clipboardData.files||[])].find(q=>q.type.startsWith('image/'));if(f){e.preventDefault();rd(f,'u').then(u=>document.execCommand('insertHTML',false,`<img src="${u}" style="width:300px">`));return}const t=e.clipboardData.getData('text/plain');e.preventDefault();const L=t.replace(/\r/g,'').split('\n');document.execCommand(x==ed?'insertHTML':'insertText',false,x==ed?L.map(l=>`<p>${l?esc(l):'<br>'}</p>`).join(''):L.join(' '));upd()});
 ed.addEventListener('input',()=>upd());ed.addEventListener('load',()=>upd(),true);[hd,ft].forEach(x=>x.addEventListener('input',()=>upd()));
 // modello per export
 const hex=c=>{const m=c.match(/[\d.]+/g);if(!m||(m.length>3&&+m[3]==0))return'';return m.slice(0,3).map(x=>(+x|0).toString(16).padStart(2,'0')).join('')};
