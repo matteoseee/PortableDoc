@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor di testo</title>
+<style id="pst"></style>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font:14px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1f2937;background:#fff}
+#app{display:flex;flex-direction:column;height:100%}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:5px 10px;border-bottom:1px solid #eef0f3;background:#fff}
+.b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:32px;height:32px;padding:0 8px;border:0;border-radius:8px;background:none;color:#374151;cursor:pointer;font:inherit}
+.b:hover{background:#f1f3f5}.b:active{background:#e3ebff}
+.b.dis{opacity:.35;cursor:not-allowed}
+.sep{width:1px;height:20px;background:#e5e7eb;margin:0 4px}
+select,.n{height:32px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;color:#374151;font:inherit;padding:0 6px}
+.n{width:58px}
+label.k{display:inline-flex;align-items:center;gap:5px;color:#4b5563}
+.b input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.cb{position:absolute;left:8px;right:8px;bottom:4px;height:3px;border-radius:2px;background:#000}
+#ig{display:none;background:#f5f8ff}
+#wrap{overflow-anchor:none;flex:1;overflow:auto;position:relative;padding:24px 12px}
+#sheet{position:relative;width:21cm;min-height:29.7cm;margin:0 auto;padding:2.5cm;background:#fff;box-shadow:0 0 0 1px #e5e7eb,0 10px 40px rgba(15,23,42,.08);--ml:2.5cm;--mr:2.5cm}
+#ed,.doc{font:11pt/1.15 Calibri,Carlito,Arial,sans-serif;color:#000;white-space:pre-wrap}
+#ed{min-height:12cm}
+.ed:focus{outline:none}
+.hf{font:9pt/1.3 Calibri,Carlito,Arial,sans-serif;color:#555;white-space:pre-wrap}
+.hf p{margin:0}
+#pgs{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#pgs>*{position:absolute}
+.gap{left:0;right:0;height:26px;background:#f3f4f6;box-shadow:inset 0 1px #e5e7eb,inset 0 -1px #e5e7eb}
+.cl{left:var(--ml);right:var(--mr)}
+.pnum{left:0;right:0;text-align:center;font:9pt Calibri,Carlito,Arial,sans-serif;color:#555}
+#hd,#ft{position:absolute;left:var(--ml);right:var(--mr);z-index:3}
+#hd{top:1cm}#ft{transform:translateY(-100%)}
+.hf:focus{outline:1px dashed #93c5fd}
+#ed [data-pb]::before{content:"";display:block;height:var(--pb)}
+.toc{margin:0 0 12px}.te{display:flex}.te .ld{flex:1;overflow:hidden;border-bottom:1px dotted #777;margin:0 4px 4px;min-width:20px;color:transparent}
+.hnum{user-select:none}
+[data-ph]:empty::before{content:attr(data-ph);color:#b6bcc6}
+:is(#ed,.doc) p{margin:0 0 8px}
+:is(#ed,.doc) :is(ul,ol){margin:0 0 8px;padding-left:24px}
+:is(#ed,.doc) h1{font-size:20pt;margin:0 0 8px}:is(#ed,.doc) h2{font-size:16pt;margin:0 0 8px}:is(#ed,.doc) h3{font-size:13pt;margin:0 0 8px}:is(#ed,.doc) h4{font-size:12pt;margin:0 0 8px}:is(#ed,.doc) h5{font-size:11pt;margin:0 0 8px}
+:is(#ed,.doc) img{max-width:100%}
+:is(#ed,.doc) table{border-collapse:collapse}
+#ed img.sel{outline:2px solid #2563eb}
+#hnd{display:none;position:absolute;width:13px;height:13px;background:#2563eb;border:2px solid #fff;border-radius:50%;cursor:nwse-resize;touch-action:none}
+#st{padding:4px 14px;border-top:1px solid #eef0f3;color:#6b7280;font-size:12px}
+#tt{position:fixed;left:50%;bottom:36px;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%}
+#tt.on{opacity:1}
+#gd{display:none;position:fixed;inset:0;background:rgba(17,24,39,.35);z-index:9;align-items:center;justify-content:center;padding:16px}
+#gd .c{background:#fff;border-radius:14px;max-width:680px;max-height:88vh;overflow:auto;padding:22px 26px;line-height:1.55}
+#gd h2{margin:0 0 8px}#gd h3{margin:16px 0 4px;font-size:15px}#gd ul{margin:4px 0;padding-left:20px}
+@media print{.bar,#st,#gd,#tt,.gap,#hnd{display:none!important}html,body,#app{height:auto;display:block}#wrap{overflow:visible;padding:0;position:static}#sheet{box-shadow:none;margin:0;min-height:0!important;height:calc(var(--nh) - 2px);overflow:hidden}[data-ph]:empty::before{content:none}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div id="app">
+<div class="bar">
+ <button class="b" id="bn" title="Nuovo documento"><span data-i="plus"></span>Nuovo</button>
+ <button class="b" id="bo" title="Apri file TXT o DOCX"><span data-i="open"></span>Apri</button>
+ <span class="sep"></span>
+ <button class="b" id="bt" title="Esporta in TXT"><span data-i="dl"></span>TXT</button>
+ <button class="b" id="bp" title="Esporta in PDF"><span data-i="dl"></span>PDF</button>
+ <button class="b" id="bd" title="Esporta in DOCX"><span data-i="dl"></span>DOCX</button>
+ <span class="sep"></span>
+ <button class="b" data-c="undo" title="Annulla"><span data-i="undo"></span></button>
+ <button class="b" data-c="redo" title="Ripeti"><span data-i="redo"></span></button>
+ <span style="flex:1"></span>
+ <button class="b" id="bh" title="Guida"><span data-i="help"></span>Guida</button>
+</div>
+<div class="bar">
+ <select id="bk" title="Stile paragrafo"><option value="<p>">Normale</option><option value="<h1>">Titolo 1</option><option value="<h2>">Titolo 2</option><option value="<h3>">Titolo 3</option><option value="<h4>">Titolo 4</option><option value="<h5>">Titolo 5</option></select>
+ <select id="ff" title="Carattere"><option>Calibri</option><option>Arial</option><option>Verdana</option><option>Tahoma</option><option>Georgia</option><option>Times New Roman</option><option>Courier New</option></select>
+ <select id="fs" title="Dimensione (pt)"><option>8</option><option>9</option><option>10</option><option selected>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option><option>36</option><option>48</option></select>
+ <span class="sep"></span>
+ <button class="b" data-c="bold" title="Grassetto (Ctrl+B)"><b>B</b></button>
+ <button class="b" data-c="italic" title="Corsivo (Ctrl+I)"><i style="font-family:serif;font-size:16px">I</i></button>
+ <button class="b" data-c="underline" title="Sottolineato (Ctrl+U)"><u>U</u></button>
+ <label class="b" title="Colore testo"><span data-i="fc"></span><i class="cb" id="fcb"></i><input type="color" id="fc" value="#000000"></label>
+ <label class="b" title="Evidenzia"><span data-i="hl"></span><i class="cb" id="hcb" style="background:#ffeb3b"></i><input type="color" id="hc" value="#ffeb3b"></label>
+ <button class="b" data-c="removeFormat" title="Rimuovi formattazione"><span data-i="er"></span></button>
+ <span class="sep"></span>
+ <button class="b" data-c="justifyLeft" title="Allinea a sinistra"><span data-i="al"></span></button>
+ <button class="b" data-c="justifyCenter" title="Centra"><span data-i="ac"></span></button>
+ <button class="b" data-c="justifyRight" title="Allinea a destra"><span data-i="ar"></span></button>
+ <button class="b" data-c="justifyFull" title="Giustifica"><span data-i="aj"></span></button>
+ <span class="sep"></span>
+ <button class="b" data-c="insertUnorderedList" title="Elenco puntato"><span data-i="ul"></span></button>
+ <button class="b" data-c="insertOrderedList" title="Elenco numerato"><span data-i="ol"></span></button>
+ <button class="b" id="bi" title="Aumenta rientro"><span data-i="in"></span></button>
+ <button class="b" id="bu" title="Diminuisci rientro"><span data-i="out"></span></button>
+ <button class="b" id="bf" title="Rientro prima riga (on/off)"><span data-i="fl"></span></button>
+ <select id="lh" title="Interlinea"><option value="" selected hidden>Interlinea</option><option>1</option><option>1.15</option><option>1.5</option><option>2</option><option>2.5</option></select>
+ <select id="ps" title="Spazio dopo il paragrafo"><option value="" selected hidden>Spazio par.</option><option value="0">0 pt</option><option value="4">4 pt</option><option value="8">8 pt</option><option value="12">12 pt</option><option value="18">18 pt</option><option value="24">24 pt</option></select>
+ <span class="sep"></span>
+ <button class="b" id="bm" title="Inserisci immagine"><span data-i="img"></span>Immagine</button>
+ <button class="b" id="bs" title="Inserisci o aggiorna il sommario"><span data-i="toc"></span>Sommario</button>
+</div>
+<div class="bar">
+ <select id="pz" title="Formato pagina"><option>A4</option><option>A3</option><option>A5</option><option>Letter</option><option>Legal</option></select>
+ <select id="po" title="Orientamento"><option value="p">Verticale</option><option value="l">Orizzontale</option></select>
+ <span class="sep"></span>
+ <span style="color:#6b7280">Margini (cm)</span>
+ <label class="k">Sup <input class="n" id="mt" type="number" value="2.5" min="0" max="10" step=".1"></label>
+ <label class="k">Dx <input class="n" id="mr" type="number" value="2.5" min="0" max="10" step=".1"></label>
+ <label class="k">Inf <input class="n" id="mb" type="number" value="2.5" min="0" max="10" step=".1"></label>
+ <label class="k">Sx <input class="n" id="ml" type="number" value="2.5" min="0" max="10" step=".1"></label>
+ <span class="sep"></span>
+ <label class="k"><input type="checkbox" id="hon" checked>Intestazione</label>
+ <label class="k"><input type="checkbox" id="fon" checked>Piè di pagina</label>
+ <label class="k"><input type="checkbox" id="pn" checked>Numeri di pagina</label>
+ <label class="k">da pagina <input class="n" id="pfrom" type="number" value="1" min="1"></label>
+ <label class="k">parti dal numero <input class="n" id="pstart" type="number" value="1"></label>
+ <span class="sep"></span>
+ <label class="k"><input type="checkbox" id="hn">Numera titoli (1, 1.1, 1.1.1)</label>
+</div>
+<div class="bar" id="ig">
+ <span style="color:#2563eb;font-weight:600">Immagine</span>
+ <label class="k">Larghezza <input class="n" id="iw" type="number" min="20" step="10"> px</label>
+ <button class="b" data-l="n" title="In linea con il testo"><span data-i="li"></span>In linea</button>
+ <button class="b" data-l="l" title="A sinistra, testo a destra"><span data-i="ll"></span>Sinistra</button>
+ <button class="b" data-l="r" title="A destra, testo a sinistra"><span data-i="lr"></span>Destra</button>
+ <button class="b" data-l="c" title="Centrata su riga propria"><span data-i="lc"></span>Centro</button>
+ <button class="b" id="idl" title="Elimina immagine"><span data-i="tr"></span>Elimina</button>
+</div>
+<div id="wrap">
+ <div id="sheet"><div id="pgs"></div>
+  <div id="hd" class="ed hf" data-ph="Intestazione: clicca per scrivere" contenteditable="true"></div>
+  <div id="ed" class="ed" contenteditable="true" spellcheck="true"><p><br></p></div>
+  <div id="ft" class="ed hf" data-ph="Piè di pagina: clicca per scrivere" contenteditable="true"></div>
+ </div>
+ <div id="hnd" title="Trascina per ridimensionare"></div>
+</div>
+<div id="st">0 parole</div>
+</div>
+<input type="file" id="fo" accept=".txt,.docx" hidden>
+<input type="file" id="fi" accept="image/*" multiple hidden>
+<div id="tt"></div>
+<div id="gd"><div class="c">
+<h2>Guida all'uso</h2>
+<p>Editor di testo che funziona interamente nel browser, anche senza internet. Nessun dato lascia il tuo computer.</p>
+<h3>Iniziare</h3>
+<ul><li>Scrivi subito nella pagina bianca, oppure usa <b>Apri</b> per caricare un file <b>.txt</b> o <b>.docx</b> (i vecchi .doc non sono supportati: salvali prima come .docx).</li><li><b>Nuovo</b> svuota il documento e riparte da zero.</li></ul>
+<h3>Testo</h3>
+<ul><li>Seleziona il testo e usa: stile (Titolo 1-3), carattere, dimensione, <b>grassetto</b>, <i>corsivo</i>, <u>sottolineato</u>, colore testo, evidenziatore, allineamento ed elenchi.</li><li>La gomma rimuove la formattazione dalla selezione. Annulla/Ripeti sono nella barra in alto (anche Ctrl+Z / Ctrl+Y).</li></ul>
+<h3>Margini, spaziatura e rientro</h3>
+<ul><li><b>Margini</b>: imposta in centimetri sopra, destra, sotto e sinistra dalla terza barra.</li><li><b>Interlinea</b> e <b>Spazio par.</b> agiscono sui paragrafi selezionati (o su quello dove si trova il cursore).</li><li><b>Rientro</b>: le frecce aumentano o diminuiscono il rientro a sinistra; il pulsante accanto attiva il rientro della sola prima riga.</li></ul>
+<h3>Intestazione e piè di pagina</h3>
+<ul><li>Clicca nella zona tratteggiata in alto o in basso alla pagina e scrivi (puoi anche formattare il testo).</li><li>Le caselle <b>Intestazione</b>, <b>Piè di pagina</b> e <b>Numeri di pagina</b> li attivano o disattivano. Compaiono su ogni pagina di PDF e DOCX.</li></ul>
+<h3>Pagine e numerazione</h3>
+<ul><li>Il testo va a capo da solo sulla pagina successiva quando raggiunge il margine inferiore. Scegli il <b>formato</b> (A4, A3, A5, Letter, Legal) e l'<b>orientamento</b> dalla terza barra.</li><li>Un paragrafo che non sta nello spazio rimasto passa intero alla pagina dopo.</li><li><b>Numeri di pagina</b> li attiva o disattiva; <b>da pagina</b> indica da quale pagina compaiono (es. 2 per saltare la copertina); <b>parti dal numero</b> è il numero mostrato in quella pagina.</li></ul>
+<h3>Titoli, numerazione e Sommario</h3>
+<ul><li>Gli stili vanno da Titolo 1 a Titolo 5.</li><li>Con <b>Numera titoli</b> i titoli diventano un elenco a più livelli: 1 Titolo, 1.1 Sottotitolo, 1.1.1 Sottotitolo del sottotitolo, ecc. La numerazione si aggiorna da sola.</li><li><b>Sommario</b> inserisce nel punto del cursore l'indice con titoli e numero di pagina. Si aggiorna in automatico mentre scrivi; per cancellarlo, mettiti dopo di esso e premi Backspace. Nel DOCX è esportato come testo con puntini di guida.</li></ul>
+<h3>Immagini</h3>
+<ul><li>Metti il cursore dove vuoi l'immagine e premi <b>Immagine</b> (puoi sceglierne più di una).</li><li>Clicca un'immagine per selezionarla: compare il punto blu in basso a destra, <b>trascinalo</b> per ridimensionarla. In alternativa scrivi la larghezza in pixel.</li><li>Nella barra azzurra scegli la posizione: <b>In linea</b> col testo, <b>Sinistra</b>/<b>Destra</b> con il testo che le avvolge, <b>Centro</b> su riga propria. <b>Elimina</b> la rimuove.</li></ul>
+<h3>Esportare</h3>
+<ul><li><b>TXT</b>: solo testo semplice. Con immagini nel documento il pulsante si disattiva (il TXT non le supporta).</li><li><b>DOCX</b>: apribile con Word e LibreOffice. Conserva stili, colori, margini, intestazione, piè di pagina e immagini. Limiti: elenchi esportati come testo con «•» o numeri, e immagini sempre in linea.</li><li><b>PDF</b>: si apre la finestra di stampa del browser; scegli <b>«Salva come PDF»</b> come stampante/destinazione. Disattiva «Intestazioni e piè di pagina» del browser per evitare data e indirizzo extra. Il PDF rispecchia esattamente le pagine che vedi (formato, margini, intestazioni, numeri). Nelle impostazioni di stampa lascia la scala al 100%.</li></ul>
+<p style="text-align:right"><button class="b" id="gx" style="background:#2563eb;color:#fff">Chiudi</button></p>
+</div></div>
+<script>
+const $=s=>document.querySelector(s),ed=$('#ed'),hd=$('#hd'),ft=$('#ft'),sheet=$('#sheet'),wrap=$('#wrap'),pn=$('#pn');
+const IC={plus:'M6 3h8l5 5v13H6z M14 3v5h5 M12 12v6 M9 15h6',open:'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',dl:'M12 4v11 M7 11l5 5 5-5 M5 20h14',undo:'M9 14L4 9l5-5 M4 9h10a6 6 0 0 1 0 12h-3',redo:'M15 14l5-5-5-5 M20 9H10a6 6 0 0 0 0 12h3',help:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7 M12 17h.01',fc:'M6 17L12 4l6 13 M8.5 12h7',hl:'M4 20h6 M14 4l6 6-8 8H6v-6z',er:'M7 21h10 M5 13l8-8a2 2 0 0 1 3 0l3 3a2 2 0 0 1 0 3l-8 8H9z',al:'M4 6h16M4 10h10M4 14h16M4 18h10',ac:'M4 6h16M7 10h10M4 14h16M7 18h10',ar:'M4 6h16M10 10h10M4 14h16M10 18h10',aj:'M4 6h16M4 10h16M4 14h16M4 18h16',ul:'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',ol:'M10 6h10M10 12h10M10 18h10M4 5l1.5-1v5 M4 14h2.5l-2.5 3.5h2.5',in:'M4 6h16M12 10h8M12 14h8M4 18h16M4 9l3 3-3 3',out:'M4 6h16M12 10h8M12 14h8M4 18h16M7 9l-3 3 3 3',fl:'M4 6h16M9 10h11M4 14h16M4 18h16M4 9l3 1.5L4 12',img:'M4 5h16v14H4z M8.5 10a1.5 1.5 0 1 0 .01 0 M20 16l-5-5-9 8',li:'M3 12h18M7 8v8M17 8v8',ll:'M4 5h8v6H4z M15 6h5M15 10h5M4 15h16M4 19h16',lr:'M12 5h8v6h-8z M4 6h5M4 10h5M4 15h16M4 19h16',lc:'M7 5h10v8H7z M4 17h16M4 21h16',tr:'M4 7h16 M9 7V4h6v3 M6 7l1 13h10l1-13',toc:'M4 6h12M4 12h12M4 18h12M19 6h.01M19 12h.01M19 18h.01'};
+document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[e.dataset.i]}"/></svg>`);
+document.execCommand('defaultParagraphSeparator',false,'p');
+let nm='documento',sr,sre,si=null;
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rd=(f,m)=>new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result);m=='u'?x.readAsDataURL(f):m=='b'?x.readAsArrayBuffer(f):x.readAsText(f)});
+const toast=t=>{const e=$('#tt');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),3800)};
+const dl=(b,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)};
+// selezione
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(!s.rangeCount||!s.anchorNode)return;const n=s.anchorNode,e=(n.nodeType==1?n:n.parentElement)?.closest('.ed');if(e){sr=s.getRangeAt(0).cloneRange();sre=e}});
+const rs=()=>{(sre||ed).focus();if(sr){const s=getSelection();s.removeAllRanges();s.addRange(sr)}};
+const ex=(c,v)=>{rs();document.execCommand('styleWithCSS',false,true);document.execCommand(c,false,v);upd()};
+document.querySelectorAll('.bar').forEach(b=>b.addEventListener('mousedown',e=>{if(!e.target.closest('select,input'))e.preventDefault()}));
+document.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(b)ex(b.dataset.c)});
+$('#ff').onchange=e=>ex('fontName',e.target.value);
+$('#fs').onchange=e=>{rs();document.execCommand('fontSize',false,7);(sre||ed).querySelectorAll('font[size="7"]').forEach(f=>{f.removeAttribute('size');f.style.fontSize=e.target.value+'pt'});upd()};
+$('#bk').onchange=e=>ex('formatBlock',e.target.value);
+$('#fc').oninput=e=>{ex('foreColor',e.target.value);$('#fcb').style.background=e.target.value};
+$('#hc').oninput=e=>{ex('hiliteColor',e.target.value);$('#hcb').style.background=e.target.value};
+const sb=()=>sr?[...(sre||ed).querySelectorAll('p,div,h1,h2,h3,li,blockquote')].filter(b=>!b.querySelector('p,div,h1,h2,h3,li')&&sr.intersectsNode(b)):[];
+const ab=f=>{sb().forEach(f);upd()};
+$('#lh').onchange=e=>{ab(b=>b.style.lineHeight=e.target.value);e.target.selectedIndex=0};
+$('#ps').onchange=e=>{ab(b=>b.style.marginBottom=e.target.value+'pt');e.target.selectedIndex=0};
+$('#bi').onclick=()=>ab(b=>b.style.marginLeft=(parseFloat(b.style.marginLeft)||0)+36+'px');
+$('#bu').onclick=()=>ab(b=>b.style.marginLeft=Math.max(0,(parseFloat(b.style.marginLeft)||0)-36)+'px');
+$('#bf').onclick=()=>ab(b=>b.style.textIndent=b.style.textIndent?'':'36px');
+// pagina
+const MI=['mt','mr','mb','ml'],CM=96/2.54,PZ={A4:[210,297],A3:[297,420],A5:[148,210],Letter:[215.9,279.4],Legal:[215.9,355.6]};
+const dims=()=>{const d=PZ[$('#pz').value];return $('#po').value=='l'?[d[1],d[0]]:d};
+function mg(){const[w,h]=dims(),v=MI.map(i=>+$('#'+i).value||0);sheet.style.width=w+'mm';sheet.style.padding=v.map(x=>x+'cm').join(' ');sheet.style.setProperty('--ml',v[3]+'cm');sheet.style.setProperty('--mr',v[1]+'cm');$('#pst').textContent=`@page{size:${w}mm ${h}mm;margin:0}`;upd(1)}
+[...MI,'pfrom','pstart'].forEach(i=>$('#'+i).oninput=mg);
+['pz','po','pn','hn','hon','fon'].forEach(i=>$('#'+i).onchange=mg);
+const tg=()=>upd(1);
+[hd,ft].forEach(x=>x.addEventListener('input',()=>{if(x.innerHTML=='<br>')x.innerHTML=''}));
+function num(){const s=getSelection(),a=s.anchorNode,o=s.anchorOffset;ed.querySelectorAll('.hnum').forEach(x=>x.remove());if(!$('#hn').checked)return;const c=[0,0,0,0,0];ed.querySelectorAll('h1,h2,h3,h4,h5').forEach(h=>{const l=+h.tagName[1]-1;c[l]++;c.fill(0,l+1);const x=document.createElement('span');x.className='hnum';x.contentEditable=false;x.textContent=c.slice(0,l+1).map(n=>n||1).join('.')+' ';h.prepend(x)});if(a&&a.nodeType==1&&/^H[1-5]$/.test(a.tagName)&&o==0&&ed.contains(a))s.collapse(a,1)}
+function tocFill(H,y0){const t=ed.querySelector('.toc');if(!t)return;const pf=+$('#pfrom').value||1,s0=+$('#pstart').value||1;t.innerHTML='<p style="font:bold 14pt Calibri,Arial,sans-serif;margin:0 0 8px">Sommario</p>'+[...ed.querySelectorAll('h1,h2,h3,h4,h5')].map(h=>{const p=Math.floor((h.getBoundingClientRect().top-y0+(parseFloat(h.style.getPropertyValue('--pb'))||0)+2)/H)+1;return`<p class="te" style="margin:0 0 3px ${(h.tagName[1]-1)*18}px"><span>${esc(h.textContent.trim())}</span><span class="ld">\t</span><span>${pn.checked&&p>=pf?s0+p-pf:p}</span></p>`}).join('')}
+function pag(){const sy=wrap.scrollTop,[w,h]=dims(),H=h*96/25.4,mt=(+$('#mt').value||0)*CM,mb=(+$('#mb').value||0)*CM,ch=H-mt-mb,toc=!!ed.querySelector('.toc');let last=mt;
+for(let r=0;r<(toc?2:1);r++){ed.querySelectorAll('[data-pb]').forEach(b=>{b.removeAttribute('data-pb');b.style.removeProperty('--pb')});const bs=[...ed.querySelectorAll(':scope>p,:scope>h1,:scope>h2,:scope>h3,:scope>h4,:scope>h5,:scope>div,:scope>table,:scope>ul>li,:scope>ol>li')],o=sheet.getBoundingClientRect().top,R=bs.map(b=>{const q=b.getBoundingClientRect();return[q.top-o,q.height]});let off=0;
+bs.forEach((b,i)=>{let[t,hh]=R[i];t+=off;const k=Math.floor(t/H),top=k*H+mt,bot=k*H+H-mb;let s=0;if(t>bot)s=(k+1)*H+mt-t;else if(t<top-.5)s=top-t;else if(t+hh>bot&&hh<=ch&&t>top+1)s=(k+1)*H+mt-t;if(s>.5){b.dataset.pb=1;b.style.setProperty('--pb',s+'px');off+=s;t+=s}last=t+hh});
+if(toc)tocFill(H,o)}
+const n=Math.max(1,Math.ceil((last+mb)/H-1e-6));sheet.style.minHeight=n*H+'px';sheet.style.setProperty('--nh',n*H+'px');
+const ho=$('#hon').checked,fo=$('#fon').checked,pf=+$('#pfrom').value||1,s0=+$('#pstart').value||1,fT=H-1.5*CM;let x='';
+hd.style.display=ho?'':'none';ft.style.display=fo?'':'none';ft.style.top=fT+'px';
+for(let k=0;k<n;k++){if(k){x+=`<div class="gap" style="top:${k*H-13}px"></div>`;if(ho&&hd.innerHTML)x+=`<div class="hf cl" style="top:${k*H+CM}px">${hd.innerHTML}</div>`;if(fo&&ft.innerHTML)x+=`<div class="hf cl" style="top:${k*H+fT}px;transform:translateY(-100%)">${ft.innerHTML}</div>`}if(pn.checked&&k+1>=pf)x+=`<div class="pnum" style="top:${k*H+H-1.4*CM}px">${s0+k+1-pf}</div>`}
+$('#pgs').innerHTML=x;wrap.scrollTop=sy;const sl=getSelection();if(document.activeElement==ed&&sl.rangeCount&&sl.isCollapsed){const rg=sl.getRangeAt(0),q=(rg.getClientRects()[0]||(rg.startContainer.nodeType==1?rg.startContainer:rg.startContainer.parentElement).getBoundingClientRect()),W=wrap.getBoundingClientRect();if(q.bottom>W.bottom-30)wrap.scrollTop+=q.bottom-W.bottom+60;else if(q.top<W.top+10)wrap.scrollTop-=W.top-q.top+60}place()}
+$('#bs').onclick=()=>{if(!ed.querySelector('.toc')){if(sre!=ed){sre=ed;sr=null}rs();document.execCommand('insertHTML',false,'<div class="toc" contenteditable="false"></div><p><br></p>')}upd(1)};
+// immagini
+$('#bm').onclick=()=>$('#fi').click();
+async function png(u){const i=new Image();i.src=u;await i.decode();const c=document.createElement('canvas');c.width=i.naturalWidth||300;c.height=i.naturalHeight||200;c.getContext('2d').drawImage(i,0,0);return c.toDataURL('image/png')}
+$('#fi').onchange=async e=>{for(const f of e.target.files){let u=await rd(f,'u');if(!/jpeg|png/.test(f.type))u=await png(u);const i=new Image();i.src=u;await i.decode();rs();document.execCommand('insertHTML',false,`<img src="${u}" style="width:${Math.min(i.naturalWidth,400)}px">`)}e.target.value='';upd()};
+const hn=$('#hnd');
+function place(){if(!si||!si.isConnected){si=null;hn.style.display='none';$('#ig').style.display='none';return}const a=si.getBoundingClientRect(),w=wrap.getBoundingClientRect();hn.style.display='block';hn.style.left=a.right-w.left+wrap.scrollLeft-8+'px';hn.style.top=a.bottom-w.top+wrap.scrollTop-8+'px';$('#ig').style.display='flex';$('#iw').value=Math.round(a.width)}
+ed.addEventListener('click',e=>{si&&si.classList.remove('sel');si=e.target.tagName=='IMG'?e.target:null;si&&si.classList.add('sel');place()});
+hn.onpointerdown=e=>{e.preventDefault();hn.setPointerCapture(e.pointerId);const x0=e.clientX,w0=si.getBoundingClientRect().width;hn.onpointermove=m=>{si.style.width=Math.max(20,w0+m.clientX-x0)+'px';si.style.height='auto';place()};hn.onpointerup=()=>hn.onpointermove=null};
+$('#iw').onchange=e=>{if(si){si.style.width=Math.max(20,+e.target.value)+'px';si.style.height='auto';place()}};
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{if(!si)return;const L={n:['none','inline-block','0','baseline'],l:['left','inline','4px 14px 8px 0',''],r:['right','inline','4px 0 8px 14px',''],c:['none','block','8px auto','']}[b.dataset.l],s=si.style;[s.float,s.display,s.margin,s.verticalAlign]=L;place()});
+$('#idl').onclick=()=>{si&&si.remove();place();upd()};
+addEventListener('resize',place);
+let TM;function upd(n){const h=!!ed.querySelector('img'),t=$('#bt');t.classList.toggle('dis',h);t.title=h?'Non disponibile: il TXT non supporta le immagini':'Esporta in TXT';$('#st').textContent=(ed.innerText.trim().match(/\S+/g)||[]).length+' parole';clearTimeout(TM);const f=()=>{num();pag()};n?f():TM=setTimeout(f,150)}
+ed.addEventListener('input',()=>upd());ed.addEventListener('load',()=>upd(),true);[hd,ft].forEach(x=>x.addEventListener('input',()=>upd()));
+// modello per export
+const hex=c=>{const m=c.match(/[\d.]+/g);if(!m||(m.length>3&&+m[3]==0))return'';return m.slice(0,3).map(x=>(+x|0).toString(16).padStart(2,'0')).join('')};
+function sty(e){const c=getComputedStyle(e);let u=false,h='';for(let x=e;x&&!x.classList.contains('ed');x=x.parentElement){const k=getComputedStyle(x);if((k.textDecorationLine||'').includes('underline'))u=true;if(!h)h=hex(k.backgroundColor)}return{f:c.fontFamily.split(',')[0].replace(/["']/g,'').trim(),b:+c.fontWeight>=600||c.fontWeight=='bold',i:c.fontStyle=='italic',u,c:hex(c.color)||'000000',z:Math.round(parseFloat(c.fontSize)*1.5),h}}
+function model(root,img){const out=[],blk=n=>n.nodeType==1&&/^(P|DIV|H[1-6]|LI|BLOCKQUOTE|UL|OL|TABLE|TBODY|TR)$/.test(n.tagName);
+const np=n=>{const c=getComputedStyle(n),fs=parseFloat(c.fontSize),lh=parseFloat(c.lineHeight);let l=parseFloat(c.marginLeft)||0;if(n.tagName=='LI')for(let x=n.parentElement;x&&x!=root;x=x.parentElement)if(/^[UO]L$/.test(x.tagName))l+=24;const P={a:{left:'left',start:'left',right:'right',end:'right',center:'center',justify:'both'}[c.textAlign]||'left',l,f:parseFloat(c.textIndent)||0,b:parseFloat(c.marginTop)||0,af:parseFloat(c.marginBottom)||0,ln:lh?lh/fs:1.15,te:n.classList.contains('te'),r:[]};if(n.tagName=='LI'){const p=n.parentElement;P.r.push({t:p.tagName=='OL'?[...p.children].indexOf(n)+1+'. ':'• ',s:sty(n)})}out.push(P);return P};
+const inl=(n,P)=>{if(n.nodeType==3){if(n.data)P.r.push({t:n.data.replace(/\n/g,' '),s:sty(n.parentElement)})}else if(n.tagName=='IMG'){if(img)P.r.push({m:n})}else if(n.tagName=='BR'){if(n.nextSibling)P.r.push({br:1})}else{n.childNodes.forEach(k=>inl(k,P));if(/^T[DH]$/.test(n.tagName))P.r.push({t:'\t',s:sty(n)})}};
+const walk=el=>{let cur=null;for(const n of el.childNodes){if(blk(n)){cur=null;if([...n.childNodes].some(blk))walk(n);else inl(n,np(n))}else{if(!cur)cur=np(el);inl(n,cur)}}};
+walk(root);if(!out.length)np(root);return out}
+// DOCX export
+const te=new TextEncoder(),td=new TextDecoder();
+const CT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^c>>>1:c>>>1;t[n]=c}return t})();
+const crc=d=>{let c=-1;for(let i=0;i<d.length;i++)c=CT[(c^d[i])&255]^c>>>8;return(c^-1)>>>0};
+const U=(n,v)=>n==2?[v&255,v>>8&255]:[v&255,v>>8&255,v>>16&255,v>>>24&255];
+function zip(fs){const P=[],C=[];let o=0;for(const f of fs){const nm=te.encode(f.n),c=crc(f.d),s=f.d.length;P.push(new Uint8Array([...U(4,0x04034b50),...U(2,20),...U(2,2048),...U(2,0),...U(2,0),...U(2,0x21),...U(4,c),...U(4,s),...U(4,s),...U(2,nm.length),...U(2,0),...nm]),f.d);C.push(new Uint8Array([...U(4,0x02014b50),...U(2,20),...U(2,20),...U(2,2048),...U(2,0),...U(2,0),...U(2,0x21),...U(4,c),...U(4,s),...U(4,s),...U(2,nm.length),...U(2,0),...U(2,0),...U(2,0),...U(2,0),...U(4,0),...U(4,o),...nm]));o+=30+nm.length+s}
+const cs=C.reduce((a,x)=>a+x.length,0);return new Blob([...P,...C,new Uint8Array([...U(4,0x06054b50),...U(2,0),...U(2,0),...U(2,fs.length),...U(2,fs.length),...U(4,cs),...U(4,o),...U(2,0)])],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'})}
+const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
+const HX='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',RT='http://schemas.openxmlformats.org/officeDocument/2006/relationships',PK='http://schemas.openxmlformats.org/package/2006/';
+let imgs=[],tabPos=9000;
+function ixml(el){const m=el.src.match(/^data:image\/(png|jpeg|gif);base64,(.*)$/);if(!m)return'';const id=imgs.length+1,b=el.getBoundingClientRect(),x=b.width*9525|0,y=b.height*9525|0;imgs.push({id,ext:m[1],d:Uint8Array.from(atob(m[2]),c=>c.charCodeAt(0))});return`<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${x}" cy="${y}"/><wp:docPr id="${id}" name="Immagine ${id}"/><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="${id}" name="i${id}"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId${id+9}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${x}" cy="${y}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`}
+function rxml(r){if(r.br)return'<w:r><w:br/></w:r>';if(r.m)return ixml(r.m);const s=r.s;return`<w:r><w:rPr><w:rFonts w:ascii="${esc(s.f)}" w:hAnsi="${esc(s.f)}" w:cs="${esc(s.f)}"/>${s.b?'<w:b/>':''}${s.i?'<w:i/>':''}<w:color w:val="${s.c}"/><w:sz w:val="${s.z}"/>${s.u?'<w:u w:val="single"/>':''}${s.h?`<w:shd w:val="clear" w:color="auto" w:fill="${s.h}"/>`:''}</w:rPr>${r.t.split('\t').map(x=>`<w:t xml:space="preserve">${esc(x)}</w:t>`).join('<w:tab/>')}</w:r>`}
+const pxml=P=>`<w:p><w:pPr>${P.te?`<w:tabs><w:tab w:val="right" w:leader="dot" w:pos="${tabPos}"/></w:tabs>`:''}<w:spacing w:before="${P.b*15|0}" w:after="${P.af*15|0}" w:line="${P.ln*240|0}" w:lineRule="auto"/><w:ind w:left="${Math.max(0,P.l*15|0)}" w:firstLine="${Math.max(0,P.f*15|0)}"/><w:jc w:val="${P.a}"/></w:pPr>${P.r.map(rxml).join('')}</w:p>`;
+function toDocx(){imgs=[];num();const[PW,PH]=dims();tabPos=Math.round((PW-(+$('#ml').value+ +$('#mr').value)*10)*56.693);const body=model(ed,true).map(pxml).join(''),hx=$('#hon').checked?model(hd,false).map(pxml).join(''):'<w:p/>';let fx=$('#fon').checked?model(ft,false).map(pxml).join(''):'';const pf=+$('#pfrom').value||1,s0=+$('#pstart').value||1,fc=t=>`<w:r><w:fldChar w:fldCharType="${t}"/></w:r>`,it=s=>`<w:r><w:instrText xml:space="preserve">${s}</w:instrText></w:r>`,tx=s=>`<w:r><w:t>${s}</w:t></w:r>`,pg=fc('begin')+it(' PAGE ')+fc('separate')+tx(1)+fc('end');
+if(pn.checked)fx+=`<w:p><w:pPr><w:jc w:val="center"/></w:pPr>${pf>1?fc('begin')+it(' IF ')+pg+it(` &lt; ${pf} "" "`)+fc('begin')+it(' = ')+pg+it(` + ${s0-pf} `)+fc('separate')+tx(s0)+fc('end')+it('"')+fc('separate')+tx(s0)+fc('end'):pg}</w:p>`;
+const m=MI.map(i=>Math.round((+$('#'+i).value||0)*567)),F=(n,s)=>({n,d:typeof s=='string'?te.encode(s):s});
+return zip([F('[Content_Types].xml',HX+`<Types xmlns="${PK}content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="gif" ContentType="image/gif"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>`),
+F('_rels/.rels',HX+`<Relationships xmlns="${PK}relationships"><Relationship Id="rId1" Type="${RT}/officeDocument" Target="word/document.xml"/></Relationships>`),
+F('word/document.xml',HX+`<w:document ${NS}><w:body>${body}<w:sectPr><w:headerReference w:type="default" r:id="rId1"/><w:footerReference w:type="default" r:id="rId2"/><w:pgSz w:w="${Math.round(PW*56.693)}" w:h="${Math.round(PH*56.693)}"${$('#po').value=='l'?' w:orient="landscape"':''}/><w:pgMar w:top="${m[0]}" w:right="${m[1]}" w:bottom="${m[2]}" w:left="${m[3]}" w:header="567" w:footer="567" w:gutter="0"/>${pf==1&&pn.checked?`<w:pgNumType w:start="${s0}"/>`:''}</w:sectPr></w:body></w:document>`),
+F('word/_rels/document.xml.rels',HX+`<Relationships xmlns="${PK}relationships"><Relationship Id="rId1" Type="${RT}/header" Target="header1.xml"/><Relationship Id="rId2" Type="${RT}/footer" Target="footer1.xml"/>${imgs.map(i=>`<Relationship Id="rId${i.id+9}" Type="${RT}/image" Target="media/i${i.id}.${i.ext}"/>`).join('')}</Relationships>`),
+F('word/header1.xml',HX+`<w:hdr ${NS}>${hx}</w:hdr>`),F('word/footer1.xml',HX+`<w:ftr ${NS}>${fx||'<w:p/>'}</w:ftr>`),...imgs.map(i=>F(`word/media/i${i.id}.${i.ext}`,i.d))])}
+// DOCX import
+async function inf(b){return new Uint8Array(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer())}
+async function unzip(buf){const dv=new DataView(buf),u=new Uint8Array(buf),o={};let e=u.length-22;while(e>0&&dv.getUint32(e,true)!=0x06054b50)e--;const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);for(let i=0;i<n;i++){const me=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true),name=td.decode(u.subarray(p+46,p+46+nl)),s=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),raw=u.subarray(s,s+cs);o[name]=me?await inf(raw):raw;p+=46+nl+el+cl}return o}
+async function fromDocx(buf){const z=await unzip(buf),T=n=>z[n]?td.decode(z[n]):'',X=s=>new DOMParser().parseFromString(s,'application/xml'),g=(e,t)=>e&&e.getElementsByTagName(t)[0],A=(e,a)=>e?e.getAttribute(a):null,on=e=>e&&!['0','false','none'].includes(A(e,'w:val'));
+const rel={};for(const r of X(T('word/_rels/document.xml.rels')).getElementsByTagName('Relationship'))rel[r.getAttribute('Id')]=r.getAttribute('Target');
+const pic=id=>{let t=rel[id]||'';t=t.startsWith('/')?t.slice(1):'word/'+t;const d=z[t];if(!d)return'';let s='';for(let i=0;i<d.length;i+=8192)s+=String.fromCharCode.apply(null,d.subarray(i,i+8192));const x=t.split('.').pop().toLowerCase();return`data:image/${x=='jpg'?'jpeg':x};base64,${btoa(s)}`};
+const run=r=>{const p=g(r,'w:rPr');let s='';if(p){if(on(g(p,'w:b')))s+='font-weight:bold;';if(on(g(p,'w:i')))s+='font-style:italic;';if(on(g(p,'w:u')))s+='text-decoration:underline;';const c=A(g(p,'w:color'),'w:val');if(c&&c!='auto')s+=`color:#${c};`;const z=A(g(p,'w:sz'),'w:val');if(z)s+=`font-size:${z/2}pt;`;const f=A(g(p,'w:rFonts'),'w:ascii');if(f)s+=`font-family:'${f}';`;const h=A(g(p,'w:shd'),'w:fill')||A(g(p,'w:highlight'),'w:val');if(h&&h!='auto')s+=`background:${/^[0-9a-f]{6}$/i.test(h)?'#'+h:h};`}
+let o='';for(const k of r.children){const n=k.nodeName;if(n=='w:t')o+=esc(k.textContent);else if(n=='w:tab')o+='&emsp;';else if(n=='w:br')o+='<br>';else if(n=='w:drawing'){const e=g(k,'wp:extent'),b=g(k,'a:blip');if(b)o+=`<img src="${pic(A(b,'r:embed'))}" style="${e?`width:${Math.round(A(e,'cx')/9525)}px`:''}">`}}return o?`<span style="${s}">${o}</span>`:''};
+const para=p=>{const pp=g(p,'w:pPr');let t='p',s='';if(pp){const m=(A(g(pp,'w:pStyle'),'w:val')||'').match(/(?:heading|titolo)\s*(\d)/i);if(m)t='h'+Math.min(+m[1],5);const j=A(g(pp,'w:jc'),'w:val');if(j)s+=`text-align:${{both:'justify',center:'center',right:'right',end:'right'}[j]||'left'};`;const i=g(pp,'w:ind');if(i){const l=A(i,'w:left')||A(i,'w:start'),f=A(i,'w:firstLine');if(l)s+=`margin-left:${l/15}px;`;if(f)s+=`text-indent:${f/15}px;`}const sp=g(pp,'w:spacing');if(sp){const a=A(sp,'w:after'),b=A(sp,'w:before'),l=A(sp,'w:line'),lr=A(sp,'w:lineRule');if(a)s+=`margin-bottom:${a/15}px;`;if(b)s+=`margin-top:${b/15}px;`;if(l&&(!lr||lr=='auto'))s+=`line-height:${l/240};`}}
+let c=pp&&g(pp,'w:numPr')?'• ':'';for(const k of p.children){if(k.nodeName=='w:r')c+=run(k);else if(k.nodeName=='w:hyperlink')for(const r of k.children)if(r.nodeName=='w:r')c+=run(r)}return{t,s,c}};
+const P=p=>{const q=para(p);return`<${q.t} style="${q.s}">${q.c||'<br>'}</${q.t}>`};
+const doc=X(T('word/document.xml')),bd=g(doc,'w:body');let h='';
+for(const k of bd.children){if(k.nodeName=='w:p')h+=P(k);else if(k.nodeName=='w:tbl'){h+='<table style="width:100%">';for(const tr of k.children)if(tr.nodeName=='w:tr'){h+='<tr>';for(const tc of tr.children)if(tc.nodeName=='w:tc')h+='<td style="border:1px solid #bbb;padding:4px">'+[...tc.children].filter(x=>x.nodeName=='w:p').map(x=>para(x).c).join('<br>')+'</td>';h+='</tr>'}h+='</table>'}}
+ed.innerHTML=h||'<p><br></p>';
+const hf=re=>{for(const n in z)if(re.test(n)){const d=X(T(n));if(d.documentElement.textContent.trim())return[...d.getElementsByTagName('w:p')].map(P).join('')}return''};
+hd.innerHTML=hf(/^word\/header\d*\.xml$/);ft.innerHTML=hf(/^word\/footer\d*\.xml$/);$('#hon').checked=!!hd.innerHTML;$('#fon').checked=!!ft.innerHTML;tg();
+const sp=[...bd.getElementsByTagName('w:pgMar')].pop();if(sp){[['mt','top'],['mr','right'],['mb','bottom'],['ml','left']].forEach(([i,a])=>{const v=A(sp,'w:'+a);if(v)$('#'+i).value=(v/567).toFixed(1)})}const sz=[...bd.getElementsByTagName('w:pgSz')].pop();if(sz){const w=A(sz,'w:w')/56.693,h=A(sz,'w:h')/56.693,a=[Math.min(w,h),Math.max(w,h)];$('#po').value=w>h?'l':'p';for(const k in PZ)if(Math.abs(PZ[k][0]-a[0])<3&&Math.abs(PZ[k][1]-a[1])<3)$('#pz').value=k}mg()}
+// file
+$('#bo').onclick=()=>$('#fo').click();
+$('#fo').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(ed.innerText.trim()&&!confirm('Il contenuto attuale verrà sostituito. Continuare?'))return;const x=f.name.split('.').pop().toLowerCase();try{if(x=='docx')await fromDocx(await rd(f,'b'));else if(x=='txt'){ed.innerHTML=(await rd(f,'t')).replace(/\r/g,'').split('\n').map(l=>`<p>${l?esc(l):'<br>'}</p>`).join('')}else return toast('Formato non supportato: usa .txt o .docx');nm=f.name.replace(/\.[^.]+$/,'');si=null;upd()}catch(er){toast('Impossibile aprire il file ('+er.message+')')}};
+$('#bn').onclick=()=>{if(ed.innerText.trim()&&!confirm('Il documento attuale verrà cancellato. Continuare?'))return;ed.innerHTML='<p><br></p>';hd.innerHTML=ft.innerHTML='';nm='documento';si=null;upd()};
+$('#bt').onclick=()=>{if(ed.querySelector('img'))return toast('Il TXT non supporta le immagini: scarica in PDF o DOCX.');dl(new Blob([model(ed,false).map(P=>P.r.map(r=>r.br?'\n':r.t).join('')).join('\n')],{type:'text/plain;charset=utf-8'}),nm+'.txt')};
+$('#bd').onclick=()=>dl(toDocx(),nm+'.docx');
+$('#bp').onclick=()=>{toast('Nella finestra di stampa scegli «Salva come PDF» come destinazione.');setTimeout(()=>window.print(),700)};
+addEventListener('beforeprint',()=>{si&&si.classList.remove('sel');place();upd(1)});
+$('#bh').onclick=()=>$('#gd').style.display='flex';
+$('#gx').onclick=()=>$('#gd').style.display='none';
+$('#gd').onclick=e=>{if(e.target.id=='gd')e.target.style.display='none'};
+mg();document.fonts?.ready.then(()=>upd(1));
+</script></body></html>
