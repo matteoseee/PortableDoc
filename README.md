@@ -1,5 +1,6 @@
-# PortableDOC (HTML singolo)
+# PortableDOC (HTML)
 
+<img width="1894" height="910" alt="image" src="https://github.com/user-attachments/assets/f87b3098-18d5-4744-96e7-e2a5122178ae" />
 
 
 Un editor di testo contenuto in un solo file HTML: nessuna dipendenza, nessuna installazione, nessuna connessione a internet. Si apre con un doppio clic nel browser e i dati restano sempre sul tuo computer.
