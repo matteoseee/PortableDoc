@@ -2,135 +2,109 @@
 
 <img width="1894" height="910" alt="image" src="https://github.com/user-attachments/assets/f87b3098-18d5-4744-96e7-e2a5122178ae" />
 
+A text editor self-contained in a single HTML file: no dependencies, no installation, no internet connection required. Double-click to open it in your browser, and your data always stays on your computer.
 
-Un editor di testo contenuto in un solo file HTML: nessuna dipendenza, nessuna installazione, nessuna connessione a internet. Si apre con un doppio clic nel browser e i dati restano sempre sul tuo computer.
+Clean interface on a white background, featuring lightweight SVG icons.
 
+Write from scratch or use Open to load a `.txt` or `.docx` file.
 
-
-Interfaccia chiara su sfondo bianco, con icone SVG leggere.
-
-
-
-Scrivi da zero oppure usa Apri per caricare un file .txt o .docx.
+No server needed: works directly from `file://`.
 
 
 
-Non serve un server: funziona anche da file://.
+## **How it works, in brief**
 
-
-## **Come funziona, in breve**
-
-Editing: un elemento contenteditable con i comandi nativi del browser.
-
-Impaginazione: dopo ogni modifica i paragrafi vengono misurati e spinti alla pagina successiva quando superano il margine inferiore. Intestazione, piè di pagina e numeri sono livelli sovrapposti.
-
-Lettura DOCX: archivio ZIP decompresso con DecompressionStream, poi lettura dell'XML con DOMParser.
-
-Scrittura DOCX: generazione dell'XML e archivio ZIP costruito a mano (senza compressione), senza librerie.
-
-PDF: stampa del browser con @page impostato sul formato scelto.
+* **Editing:** A `contenteditable` element using the browser's native commands.
+* **Pagination:** After every edit, paragraphs are measured and pushed to the next page when they exceed the bottom margin. Headers, footers, and page numbers are rendered as overlaid layers.
+* **Reading DOCX:** ZIP archive decompressed using `DecompressionStream`, followed by XML reading via `DOMParser`.
+* **Writing DOCX:** XML generation and hand-built ZIP archive (without compression), with zero libraries.
+* **PDF:** Browser print dialog with `@page` configured to the chosen size.
 
 
 
-## **Contribuire**
+## **Contributing**
+
+Bug reports and proposals are welcome via Issues and Pull Requests. To keep the project simple, every modification should remain within the single file and avoid introducing external dependencies.
 
 
 
-Segnalazioni e proposte sono benvenute tramite Issues e Pull Request. Per mantenere il progetto semplice, ogni modifica dovrebbe restare in un unico file e non introdurre dipendenze esterne.
+## **Features**
+
+* **Text**
+* Paragraph styles: Normal and Heading 1–5
+* Font family and size (pt)
+* Bold, italic, underline
+* Text color and highlighter
+* Alignment: left, center, right, justified
+* Bulleted and numbered lists
+* Clear formatting, undo, and redo
+* **Paragraph \& Page**
+* Top, bottom, left, and right margins in cm
+* Line spacing and space after paragraph
+* Left indent and first-line indent
+* Page format: A4, A3, A5, Letter, Legal, portrait or landscape
+* Automatic pagination: text flows to the next page upon reaching the bottom margin
+* **Headers, Footers \& Page Numbers**
+* Editable headers and footers repeated on every page
+* Toggleable page numbers
+* Option to set the starting display page for page numbers
+* Option to set the starting page number count
+* **Headings \& Table of Contents**
+* Multilevel heading numbering (1, 1.1, 1.1.1, ...)
+* Automatic Table of Contents with headings and page numbers, updating as you type
+* **Images**
+* Insert single or multiple images (PNG, JPEG, and other formats, converted when necessary)
+* Resize by dragging the control handle or setting the width in pixels
+* Position: inline with text, left, right, or centered
+* File import and export
 
 
 
-## Funzioni
+## **Supported Import \& Export Formats**
 
-* Testo
-* Stili paragrafo: Normale e Titolo 1-5
-* Carattere e dimensione (pt)
-* Grassetto, corsivo, sottolineato
-* Colore del testo ed evidenziatore
-* Allineamento: sinistra, centro, destra, giustificato
-* Elenchi puntati e numerati
-* Rimozione della formattazione, annulla e ripeti
-* Paragrafo e pagina
-* Margini superiore, inferiore, sinistro e destro in cm
-* Interlinea e spazio dopo il paragrafo
-* Rientro a sinistra e rientro della prima riga
-* Formato pagina: A4, A3, A5, Letter, Legal, in verticale o orizzontale
-* Impaginazione automatica: il testo passa alla pagina successiva al raggiungimento del margine inferiore
-* Intestazione, piè di pagina e numeri di pagina
-* Intestazione e piè di pagina modificabili e ripetuti su ogni pagina
-* Numeri di pagina attivabili o disattivabili
-* Scelta della pagina da cui far comparire i numeri
-* Scelta del numero da cui partire
-* Titoli e sommario
-* Numerazione multilivello dei titoli (1, 1.1, 1.1.1, ...)
-* Sommario automatico con titoli e numeri di pagina, aggiornato mentre si scrive
-* Immagini
-* Inserimento di una o più immagini (PNG, JPEG e altri formati, convertiti quando serve)
-* Ridimensionamento trascinando il punto di controllo o impostando la larghezza in pixel
-* Posizione: in linea con il testo, a sinistra, a destra o centrata
-* Importazione ed esportazione file
+|Format|Import|Export|Notes|
+|-|:-:|:-:|-|
+|**TXT**|Yes|Yes|Plain text only. Disabled if the document contains images.|
+|**DOCX**|Yes|Yes|Preserves styles, colors, margins, page size, header, footer, and images.|
+|**PDF**|No|Yes|Via browser printing (Save as PDF).|
+
+> \*\*Note:\*\* The PDF is generated using the browser's print dialog, which reproduces the pages exactly as they appear in the editor.
 
 
 
-## **Import ed export file supportati**
+## **Known Limitations**
 
-Formato	Importa	Esporta	Note
-
-\- TXT	sì	sì	Solo testo. Disattivato se il documento contiene immagini
-
-\- DOCX	sì	sì	Stili, colori, margini, formato pagina, intestazione, piè di pagina e immagini
-
-\- PDF	no	sì	Tramite stampa del browser (Salva come PDF)
-
-
-
-NB: Il PDF viene generato dalla finestra di stampa del browser, che riproduce le pagine così come le vedi nell'editor.
+* **DOCX:** Lists are exported as plain text with "•" or numbers. Images are always inserted inline, even if wrapped beside text in the editor. The Table of Contents is exported as static text rather than an automatic Word TOC field.
+* **DOCX Numbering:** If page numbers start on a page other than the first, Word may only update the field after pressing `F9`.
+* **Pagination:** Word calculates layout using its own fonts, so page breaks in the exported DOCX may land in slightly different places than in the editor.
+* **Long Paragraphs:** A paragraph that does not fit in the remaining page space moves in its entirety to the next page, leaving some blank space at the bottom.
+* **Input Formats:** `.doc` files (Word 97–2003) are not supported. Please save them as `.docx` first.
+* **Complex DOCX Files:** Nested tables, text boxes, shapes, footnotes/endnotes, and fields are not imported.
+* **DOCX Reading:** Requires a browser with `DecompressionStream` support.
 
 
 
+## **Compatibility**
 
-
-## **Limiti noti**
-
-DOCX: gli elenchi sono esportati come testo con «•» o numeri. Le immagini sono sempre inserite in linea, anche se nell'editor sono affiancate al testo. Il sommario è esportato come testo statico, non come sommario automatico di Word.
-
-Numerazione DOCX: se i numeri di pagina partono da una pagina diversa dalla prima, Word potrebbe aggiornare il campo solo dopo F9.
-
-Impaginazione: Word calcola le pagine con i propri font, quindi le interruzioni di pagina nel DOCX possono cadere in punti leggermente diversi dall'editor.
-
-Paragrafi lunghi: un paragrafo che non entra nello spazio rimasto passa intero alla pagina successiva, lasciando un po' di spazio vuoto.
-
-Formati in ingresso: i file .doc (Word 97-2003) non sono supportati. Salvali prima come .docx.
-
-File DOCX complessi: tabelle annidate, caselle di testo, forme, note e campi non sono importati.
-
-Lettura DOCX: richiede un browser con supporto a DecompressionStream.
-
-
-
-## **Compatibilità**
-
-Browser	Versione minima
-
-Chrome / Edge	80
-
-Firefox	113
-
-Safari	16.4
+|Browser|Minimum Version|
+|-|-|
+|Chrome / Edge|80|
+|Firefox|113|
+|Safari|16.4|
 
 
 
 ## **Privacy**
 
-Tutto avviene nel browser. Il file non contiene richieste di rete e nessun contenuto viene inviato a server esterni.
+Everything happens locally in the browser. The file makes no network requests, and no content is ever sent to external servers.
 
 
 
-## **Struttura del progetto**
+## **Project Structure**
 
-\# l'intera applicazione (HTML + CSS + JavaScript)
+`index.html` — The entire application (HTML + CSS + JavaScript)
 
 
 
-Enjoy
+Enjoy!
 
